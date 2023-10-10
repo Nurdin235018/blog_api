@@ -1,9 +1,11 @@
-from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
+# from rest_framework.views import APIView
 from rest_framework import generics, viewsets
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import *
 from .models import Category, Tag, Post
 from .serializers import CategorySerializer, TagSerializer, PostSerializer, PostListingSerializer
-from rest_framework.response import Response
+# from rest_framework.response import Response
 
 
 # class CategoryView(APIView):
@@ -71,10 +73,19 @@ class TagDetailView(generics.RetrieveUpdateDestroyAPIView):
     #           self.permission_classes = [AllowAny]
     #     return super().get_permissions()
 
+class PostSetPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
 
 class PostView(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    filter_backends = [OrderingFilter, SearchFilter]
+    ordering_fields = ['title']
+    search_fields = ['title']
+    pagination_class = PostSetPagination
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
@@ -82,4 +93,3 @@ class PostView(viewsets.ModelViewSet):
             return PostListingSerializer
         else:
             return self.serializer_class
-

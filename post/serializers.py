@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from preview.serializer import CommentSerializer
 from .models import Category, Tag, Post
 
 
@@ -49,10 +51,13 @@ class PostSerializer(serializers.ModelSerializer):
         post.tags.add(*tags)
         return post
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['comments'] = CommentSerializer(instance.comments.all(), many=True).data
+        return rep
+
 
 class PostListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('title', 'image',)
-
-

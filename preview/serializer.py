@@ -12,3 +12,4 @@ class CommentSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         comment = self.Meta.model.objects.create(author=user, **validated_data)
         return comment
+
