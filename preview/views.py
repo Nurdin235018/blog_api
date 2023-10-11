@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .serializer import CommentSerializer, RatingSerializer, LikeSerializer
+from .serializer import CommentSerializer, RatingSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import Comment, Rating, Like
 from rest_framework.permissions import *
@@ -27,7 +27,7 @@ class RatingViewSet(ModelViewSet):
         return super().get_permissions()
 
 
-class LikeView(generics.CreateAPIView):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
+# class LikeView(generics.CreateAPIView):
+#     queryset = Like.objects.all()
+#     serializer_class = LikeSerializer
 

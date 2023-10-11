@@ -5,7 +5,10 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import *
 from .models import Category, Tag, Post
 from .serializers import CategorySerializer, TagSerializer, PostSerializer, PostListingSerializer
-# from rest_framework.response import Response
+from preview.models import Like, Rating
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from preview.serializer import CommentSerializer, RatingSerializer
 
 
 # class CategoryView(APIView):
@@ -93,3 +96,41 @@ class PostView(viewsets.ModelViewSet):
             return PostListingSerializer
         else:
             return self.serializer_class
+    @action(['POST'], detail=True)
+    def like(self, request, pk=None):
+        post = self.get_object()
+        user = request.user
+        try:
+            like = Like.objects.get(post=post, author=user)
+            like.delete()
+            message = 'disliked'
+        except Like.DoesNotExist:
+            like = Like.objects.create(post=post, author=user)
+            like.save()
+            message = 'liked'
+        return Response(message)
+
+
+    @action(['GET'], detail=True)
+    def comments(self, request, pk=None):
+        post = self.get_object()
+        comments = post.comments.all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+
+    @action(['POST', 'PATCH'], detail=True)
+    def rating(self, request, pk=None):
+        data = request.data.copy()
+        data['post'] = pk
+        serializer = RatingSerializer(data=data, context={'request': request})
+        rating = Rating.objects.filter(author=request.user, post=pk)
+        serializer.is_valid(raise_exception=True)
+        if rating and request.method == 'PATCH':
+            serializer.update(rating[0], serializer.validated_data)
+        elif rating and request.method == 'POST':
+            return Response('You already had made a rating')
+        elif not rating and request.mothod == 'POST':
+            serializer.create(serializer.validated_data)
+        return Response(serializer.data)
+

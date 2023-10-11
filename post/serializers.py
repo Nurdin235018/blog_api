@@ -65,4 +65,3 @@ class PostListingSerializer(serializers.ModelSerializer):
         model = Post
         fields = ('title', 'image',)
 
-
