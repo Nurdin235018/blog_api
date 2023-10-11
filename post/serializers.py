@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Avg
 
 from preview.serializer import CommentSerializer
 from .models import Category, Tag, Post
@@ -54,6 +55,8 @@ class PostSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['comments'] = CommentSerializer(instance.comments.all(), many=True).data
+        rep['rating'] = instance.ratings.aggregate(Avg('rating'))['rating__avg']
+        rep['likes'] = instance.likes.count()
         return rep
 
 
@@ -61,3 +64,5 @@ class PostListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('title', 'image',)
+
+
